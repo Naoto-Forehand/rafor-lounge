@@ -1,0 +1,8 @@
+{
+	"name" : "com.vrchat.template.udonSharp",
+	"displayName" : "VRChat World Project with UdonSharp",
+	"description" : "A World project with UdonSharp compiler pre-installed",
+	"version" : "1.0.2",
+	"category" : "ProjectTemplate",
+	"dependencies" : {}
+}
