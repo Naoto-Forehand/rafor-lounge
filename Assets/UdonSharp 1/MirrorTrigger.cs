@@ -39,4 +39,9 @@ public class MirrorTrigger : UdonSharpBehaviour
             SendCustomNetworkEvent(VRC.Udon.Common.Interfaces.NetworkEventTarget.All, "UpdateMirrorCanvas");
         }
     }
+
+    public override void OnDeserialization()
+    {
+        UpdateMirrorCanvas();
+    }
 }

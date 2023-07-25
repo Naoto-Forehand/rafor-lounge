@@ -6,7 +6,6 @@ using VRC.Udon;
 
 public class LightGuider : UdonSharpBehaviour
 {
-    //public GameObject GuideLight;
     public GameObject[] GuideLights;
     public GameObject ReferenceObject;
     public float MaxIntensity;
@@ -16,7 +15,6 @@ public class LightGuider : UdonSharpBehaviour
     private float _lightIntensity = 0f;
     [UdonSynced]
     private int _ownerID = -10;
-    //private Light _guideLight;
     private Light[] _guideLights;
     private const int NO_OWNER = -1;
     private const float MAX_DISTANCE = 20.5f;
@@ -35,11 +33,6 @@ public class LightGuider : UdonSharpBehaviour
             }
         }
         SetLightIntensity();
-        //if (GuideLight)
-        //{
-        //    _guideLight = GuideLight.GetComponent<Light>();
-        //    _guideLight.intensity = (_lightIntensity == 0f) ? MinIntensity : _lightIntensity;
-        //}
 
         if (_ownerID == -10)
         {
@@ -51,7 +44,7 @@ public class LightGuider : UdonSharpBehaviour
     {
         if (_ownerID != NO_OWNER)
         {
-
+            SetLightIntensity();
         }
     }
 
@@ -61,8 +54,6 @@ public class LightGuider : UdonSharpBehaviour
         {
             _ownerID = player.playerId;
             Networking.SetOwner(player, this.gameObject);
-            var distance = CalculateDistance();
-            Debug.Log($"[GUIDE] dist {distance}");
         }
     }
 
@@ -76,8 +67,6 @@ public class LightGuider : UdonSharpBehaviour
 
         if (_ownerID == player.playerId)
         {
-            var distance = CalculateDistance();
-            Debug.Log($"[GUIDE] dist update {distance}");
             SendCustomNetworkEvent(VRC.Udon.Common.Interfaces.NetworkEventTarget.All, "UpdateLightIntensity");
         }
     }
@@ -97,7 +86,7 @@ public class LightGuider : UdonSharpBehaviour
         _lightIntensity = currentPoint + MinIntensity;
         _lightIntensity = Mathf.Max(_lightIntensity, MinIntensity);
         _lightIntensity = Mathf.Min(_lightIntensity, MaxIntensity);
-        Debug.Log($"[GUIDE] lights {MinIntensity} {MaxIntensity} {varRange} {currentPoint} {currentDistance} {_lightIntensity}");
+        
         SetLightIntensity();
     }
 

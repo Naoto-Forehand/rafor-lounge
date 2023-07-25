@@ -33,16 +33,12 @@ public class UISystem : UdonSharpBehaviour
         if (Dropdown)
         {
             _dropDown = Dropdown.GetComponent<Dropdown>();
-        //    _dropDown.onValueChanged.AddListener(OnDropDownChanged);
         }
 
         if (Toggle)
         {
             _toggle = Toggle.GetComponent<Toggle>();
-        //    _toggle.onValueChanged.AddListener(OnToggleChange);
         }
-        //Dropdown.onValueChanged.AddListener(OnDropDownChanged);
-        //Toggle.onValueChanged.AddListener(OnToggleChange);
 
         if (ActiveSideObject)
         {
@@ -60,7 +56,6 @@ public class UISystem : UdonSharpBehaviour
 
     public void OnDropDownChanged(int value)
     {
-        Debug.Log("[UI] OnDropDownChanged");
         if (value < Dinos.Length && value >= 0)
         {
             _selectedDino = value;
@@ -84,7 +79,6 @@ public class UISystem : UdonSharpBehaviour
 
     public void OnToggleChange(bool value)
     {
-        Debug.Log("[UI] OnToggleChange");
         if (value)
         {
             SendCustomNetworkEvent(VRC.Udon.Common.Interfaces.NetworkEventTarget.All, "ShowDino");
@@ -97,7 +91,6 @@ public class UISystem : UdonSharpBehaviour
 
     public void LoadDino()
     {
-        Debug.Log("[UI] LOAD DINO");
         if (_loadedDino != null)
         {
             GameObject.Destroy(_loadedDino);
@@ -112,13 +105,13 @@ public class UISystem : UdonSharpBehaviour
             if (Die)
             {
                 Die.DinoToAnimate = _loadedDino.GetComponent<Animator>();
+                Die.UpdateAnimation();
             }
         }
     }
 
     public void RemoveDino()
     {
-        Debug.Log("[UI] REMOVE DINO");
         if (_loadedDino != null)
         {
             GameObject.Destroy(_loadedDino);
@@ -127,14 +120,12 @@ public class UISystem : UdonSharpBehaviour
 
     public void ShowDino()
     {
-        Debug.Log("[UI] SHOW DINO");
         _dinoVisible = true;
         SendCustomNetworkEvent(VRC.Udon.Common.Interfaces.NetworkEventTarget.All, "LoadDino");
     }
 
     public void HideDino()
     {
-        Debug.Log("[UI] HIDE DINO");
         _dinoVisible = false;
         SendCustomNetworkEvent(VRC.Udon.Common.Interfaces.NetworkEventTarget.All, "RemoveDino");
     }

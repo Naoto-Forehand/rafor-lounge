@@ -33,17 +33,14 @@ public class AnimationManipulator : UdonSharpBehaviour
 
     public void UpdateAnimation()
     {
-        Debug.Log($"[ANIMATOR MANIPULATOR] ACTIVE SIDE IS {_activeSide}");
         if (DinoToAnimate != null)
         {
-            Debug.Log($"[ANIMATOR MANIPULATOR] ACTIVE SIDE IS {_activeSide}");
-            //DinoToAnimate.Play()
+            DinoToAnimate.SetInteger("state", _activeSide);
         }
     }
 
     public override void OnDrop()
     {
-        Debug.Log("[ANIMATOR MANIPULATOR] Has been dropped");
         _isMoving = true;
     }
 
@@ -72,7 +69,7 @@ public class AnimationManipulator : UdonSharpBehaviour
         sides[5] = Vector3.Angle(-_cubeTransform.forward, Vector3.up);
         var smallestAngle = Mathf.Min(sides);
         var index = System.Array.IndexOf(sides, smallestAngle);
-        Debug.Log($"[ANIMATION MANIPULATOR] index {index}");
+
         _activeSide = index;
     }
 }

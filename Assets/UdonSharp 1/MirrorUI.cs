@@ -28,20 +28,11 @@ public class MirrorUI : UdonSharpBehaviour
     {
         if ((ToggleGroup.Length > TOGGLE_INDEX) && (ToggleGroup[TOGGLE_INDEX]))
         {
-            //var children = ToggleGroup[TOGGLE_INDEX].GetComponentsInChildren<Transform>();
-            //for (int index = 0; index < children.Length; ++index)
-            //{
-            //    if (children[index].name.Contains("Label"))
-            //    {
-            //        Debug.Log($"[MIRROR] Contains Text ? {(children[index].GetComponent<Text>() != null)}");
-            //    }
-            //}
             var foundLabel = ToggleGroup[TOGGLE_INDEX].GetComponentInChildren<Text>();
             if (foundLabel)
             {
                 _text = foundLabel;
             }
-            Debug.Log($"[MIRROR] {foundLabel.gameObject.name}");
         }
         if ((ToggleGroup.Length > TOGGLE_SPOT_INDEX) && (ToggleGroup[TOGGLE_SPOT_INDEX]))
         {

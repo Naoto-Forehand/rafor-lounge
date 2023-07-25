@@ -15,11 +15,12 @@ public class PedestalGenerator : UdonSharpBehaviour
     [UdonSynced]
     private bool _pedestalEnabled;
     [UdonSynced]
-    private int _activePlayersInTrigger;
+    private int _activePlayerInTrigger;
 
     private GameObject _spawnedPedestal;
     private int _localId;
-    private bool _localInTrigger;
+    //private bool _localInTrigger;
+    private const int UNASSIGNED_ID = -1;
 
     void Start()
     {
@@ -37,9 +38,9 @@ public class PedestalGenerator : UdonSharpBehaviour
         InjectSpawnPoint();
         _spawnedPedestal.SetActive(false);
         _pedestalEnabled = false;
-        _activePlayersInTrigger = 0;
-        _localId = Networking.LocalPlayer.playerId;
-        _localInTrigger = false;
+        _activePlayerInTrigger = UNASSIGNED_ID;
+        _localId = (Networking.LocalPlayer != null) ? Networking.LocalPlayer.playerId : UNASSIGNED_ID;
+        //_localInTrigger = false;
     }
 
     private void CreatePedestal()
@@ -73,22 +74,19 @@ public class PedestalGenerator : UdonSharpBehaviour
         Canvas.SetActive(value);
     }
 
-    public void AddPlayer()
-    {
-        ++_activePlayersInTrigger;
-    }
+    //public void AddPlayer()
+    //{
+    //    ++_activePlayerInTrigger;
+    //}
 
-    public void RemovePlayer()
-    {
-        --_activePlayersInTrigger;
-    }
+    //public void RemovePlayer()
+    //{
+    //    --_activePlayerInTrigger;
+    //}
 
     public void EnablePedestal()
     {
-        //Debug.Log($"[PEDESTAL] {_localId} ENABLE players PRE in trigger {_activePlayersInTrigger}");
-        //++_activePlayersInTrigger;
-        //Debug.Log($"[PEDESTAL] {_localId} ENABLE players POST in trigger {_activePlayersInTrigger}");
-        if (!_pedestalEnabled)
+        if (!_pedestalEnabled && _activePlayerInTrigger != UNASSIGNED_ID)
         {
             TogglePedestal(true);
             ToggleCanvas(true);
@@ -97,10 +95,7 @@ public class PedestalGenerator : UdonSharpBehaviour
 
     public void DisablePedestal()
     {
-        //Debug.Log($"[PEDESTAL] {_localId} DISABLE players PRE in trigger {_activePlayersInTrigger}");
-        //--_activePlayersInTrigger;
-        //Debug.Log($"[PEDESTAL] {_localId} DISABLE players POST in trigger {_activePlayersInTrigger}");
-        if (_pedestalEnabled && _activePlayersInTrigger < 1)
+        if (_pedestalEnabled && _activePlayerInTrigger == UNASSIGNED_ID)
         {
             TogglePedestal(false);
             ToggleCanvas(false);
@@ -109,23 +104,35 @@ public class PedestalGenerator : UdonSharpBehaviour
 
     public override void OnPlayerTriggerEnter(VRCPlayerApi player)
     {
-        Debug.Log($"[ENTER] {player.playerId} send increment");
-        if (player.playerId == _localId)
+        if (player.playerId == _localId && _activePlayerInTrigger == UNASSIGNED_ID)
         {
-            Debug.Log($"[PEDESTAL] {_localId} entered trigger");
-            _localInTrigger = true;
-            ++_activePlayersInTrigger;
+            //_localInTrigger = true;
+            //++_activePlayerInTrigger;
+            _activePlayerInTrigger = player.playerId;
         }
         SendCustomNetworkEvent(VRC.Udon.Common.Interfaces.NetworkEventTarget.All, "EnablePedestal");
     }
 
+    public override void OnPlayerTriggerStay(VRCPlayerApi player)
+    {
+        if ((_activePlayerInTrigger == UNASSIGNED_ID) && (player.IsValid()))
+        {
+            _activePlayerInTrigger = player.playerId;
+            if (!_pedestalEnabled)
+            {
+                SendCustomNetworkEvent(VRC.Udon.Common.Interfaces.NetworkEventTarget.All, "EnablePedestal");
+            }
+        }
+    }
+
     public override void OnPlayerTriggerExit(VRCPlayerApi player)
     {
-        if (player.playerId == _localId)
+        if (player.playerId == _localId && _activePlayerInTrigger == player.playerId)
         {
             Debug.Log($"[PEDESTAL] {_localId} exited trigger");
-            _localInTrigger = false;
-            --_activePlayersInTrigger;
+            //_localInTrigger = false;
+            //--_activePlayerInTrigger;
+            _activePlayerInTrigger = UNASSIGNED_ID;
         }
         SendCustomNetworkEvent(VRC.Udon.Common.Interfaces.NetworkEventTarget.All, "DisablePedestal");
     }
@@ -144,11 +151,12 @@ public class PedestalGenerator : UdonSharpBehaviour
     public override void OnPlayerLeft(VRCPlayerApi player)
     {
         Debug.Log($"[PEDESTAL] player left {(player != null)}");
-        Debug.Log($"[PEDESTAL] [{_localId}] {_localInTrigger}");
-        if (_localInTrigger)
+        Debug.Log($"[PEDESTAL] [{_localId}] {_activePlayerInTrigger}");
+        if (_localId == _activePlayerInTrigger)
         {
-            _localInTrigger = false;
-            --_activePlayersInTrigger;
+            _activePlayerInTrigger = UNASSIGNED_ID;
+            //_localInTrigger = false;
+            //--_activePlayerInTrigger;
             SendCustomNetworkEvent(VRC.Udon.Common.Interfaces.NetworkEventTarget.All, "DisablePedestal");
         }
     }
