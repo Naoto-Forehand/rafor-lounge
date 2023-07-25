@@ -60,16 +60,18 @@ public class DoorUI : UdonSharpBehaviour
     {
         Debug.Log("[BEDROOM] LOCKDOWN");
         _isLocked = true;
-        SendCustomNetworkEvent(VRC.Udon.Common.Interfaces.NetworkEventTarget.All, "UpdateLockState");
+        
         LockableDoor.LockDoor();
+        SendCustomNetworkEvent(VRC.Udon.Common.Interfaces.NetworkEventTarget.All, "UpdateLockState");
     }
 
     public void DisableLock()
     {
         Debug.Log("[BEDROOM] OPEN SESAME");
         _isLocked = false;
-        SendCustomNetworkEvent(VRC.Udon.Common.Interfaces.NetworkEventTarget.All, "UpdateLockState");
+        
         LockableDoor.UnlockDoor();
+        SendCustomNetworkEvent(VRC.Udon.Common.Interfaces.NetworkEventTarget.All, "UpdateLockState");
     }
 
     public void UpdateLockState()
