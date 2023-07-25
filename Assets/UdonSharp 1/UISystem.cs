@@ -11,6 +11,9 @@ public class UISystem : UdonSharpBehaviour
     public GameObject Toggle;
     public GameObject SpawnPoint;
     public GameObject[] Dinos;
+    public AnimationManipulator Die;
+    public Transform DieRespawn;
+    public GameObject ActiveSideObject;
 
     [UdonSynced]
     private int _selectedDino;
@@ -20,6 +23,7 @@ public class UISystem : UdonSharpBehaviour
     private GameObject _loadedDino;
     private Dropdown _dropDown;
     private Toggle _toggle;
+    private Text _activeSide;
 
     void Start()
     {
@@ -39,6 +43,19 @@ public class UISystem : UdonSharpBehaviour
         }
         //Dropdown.onValueChanged.AddListener(OnDropDownChanged);
         //Toggle.onValueChanged.AddListener(OnToggleChange);
+
+        if (ActiveSideObject)
+        {
+            _activeSide = ActiveSideObject.GetComponent<Text>();
+        }
+    }
+
+    void LateUpdate()
+    {
+        if ((_activeSide != null) && (Die))
+        {
+            _activeSide.text = $"{Die.ActiveSide}";
+        }
     }
 
     public void OnDropDownChanged(int value)
@@ -92,6 +109,10 @@ public class UISystem : UdonSharpBehaviour
             var localPos = _loadedDino.transform.localPosition;
             localPos.y += 0.2f;
             _loadedDino.transform.localPosition = localPos;
+            if (Die)
+            {
+                Die.DinoToAnimate = _loadedDino.GetComponent<Animator>();
+            }
         }
     }
 
@@ -116,5 +137,10 @@ public class UISystem : UdonSharpBehaviour
         Debug.Log("[UI] HIDE DINO");
         _dinoVisible = false;
         SendCustomNetworkEvent(VRC.Udon.Common.Interfaces.NetworkEventTarget.All, "RemoveDino");
+    }
+
+    public void RetrieveDie()
+    {
+        Die.transform.position = DieRespawn.position;
     }
 }
