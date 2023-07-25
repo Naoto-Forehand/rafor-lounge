@@ -19,7 +19,6 @@ public class PedestalGenerator : UdonSharpBehaviour
 
     private GameObject _spawnedPedestal;
     private int _localId;
-    //private bool _localInTrigger;
     private const int UNASSIGNED_ID = -1;
 
     void Start()
@@ -40,7 +39,6 @@ public class PedestalGenerator : UdonSharpBehaviour
         _pedestalEnabled = false;
         _activePlayerInTrigger = UNASSIGNED_ID;
         _localId = (Networking.LocalPlayer != null) ? Networking.LocalPlayer.playerId : UNASSIGNED_ID;
-        //_localInTrigger = false;
     }
 
     private void CreatePedestal()
@@ -74,16 +72,6 @@ public class PedestalGenerator : UdonSharpBehaviour
         Canvas.SetActive(value);
     }
 
-    //public void AddPlayer()
-    //{
-    //    ++_activePlayerInTrigger;
-    //}
-
-    //public void RemovePlayer()
-    //{
-    //    --_activePlayerInTrigger;
-    //}
-
     public void EnablePedestal()
     {
         if (!_pedestalEnabled && _activePlayerInTrigger != UNASSIGNED_ID)
@@ -106,8 +94,6 @@ public class PedestalGenerator : UdonSharpBehaviour
     {
         if (player.playerId == _localId && _activePlayerInTrigger == UNASSIGNED_ID)
         {
-            //_localInTrigger = true;
-            //++_activePlayerInTrigger;
             _activePlayerInTrigger = player.playerId;
         }
         SendCustomNetworkEvent(VRC.Udon.Common.Interfaces.NetworkEventTarget.All, "EnablePedestal");
@@ -129,9 +115,6 @@ public class PedestalGenerator : UdonSharpBehaviour
     {
         if (player.playerId == _localId && _activePlayerInTrigger == player.playerId)
         {
-            Debug.Log($"[PEDESTAL] {_localId} exited trigger");
-            //_localInTrigger = false;
-            //--_activePlayerInTrigger;
             _activePlayerInTrigger = UNASSIGNED_ID;
         }
         SendCustomNetworkEvent(VRC.Udon.Common.Interfaces.NetworkEventTarget.All, "DisablePedestal");
@@ -147,16 +130,11 @@ public class PedestalGenerator : UdonSharpBehaviour
         }
     }
 
-    //TODO Figure out better how to handle players leaving game
     public override void OnPlayerLeft(VRCPlayerApi player)
     {
-        Debug.Log($"[PEDESTAL] player left {(player != null)}");
-        Debug.Log($"[PEDESTAL] [{_localId}] {_activePlayerInTrigger}");
         if (_localId == _activePlayerInTrigger)
         {
             _activePlayerInTrigger = UNASSIGNED_ID;
-            //_localInTrigger = false;
-            //--_activePlayerInTrigger;
             SendCustomNetworkEvent(VRC.Udon.Common.Interfaces.NetworkEventTarget.All, "DisablePedestal");
         }
     }
