@@ -3168,7 +3168,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &469373721
 Transform:
   m_ObjectHideFlags: 0
@@ -3202,7 +3202,7 @@ MonoBehaviour:
   SynchronizePosition: 0
   AllowCollisionOwnershipTransfer: 0
   Reliable: 0
-  _syncMethod: 2
+  _syncMethod: 3
   serializedProgramAsset: {fileID: 11400000, guid: f94d1ca9061c64a4f994c7aa11d5566b,
     type: 2}
   programSource: {fileID: 11400000, guid: fd17c1f339a6bd647a8dde7eabaa205e, type: 2}
@@ -7779,7 +7779,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   interactTextPlacement: {fileID: 0}
-  interactText: Use
+  interactText: Open
   interactTextGO: {fileID: 0}
   proximity: 2
   SynchronizePosition: 0
@@ -9687,7 +9687,7 @@ MonoBehaviour:
   contentGore: 0
   contentOther: 0
   releasePublic: 0
-  unityVersion: 2019.4.31f1
+  unityVersion: 2019.4.40f1
   Name: 
   NSFW: 0
   SpawnPosition: {x: 0, y: 0, z: 0}
@@ -9697,18 +9697,18 @@ MonoBehaviour:
   DynamicPrefabs: []
   DynamicMaterials:
   - {fileID: 2100000, guid: 10de6384af0c3b54e8166f9c3f936e88, type: 2}
+  - {fileID: 2100000, guid: 51d587eafcd13384bafd060c5bc7cb82, type: 2}
   - {fileID: 2100000, guid: 5476ae29e2e50194abce19e5cacce575, type: 2}
+  - {fileID: 2100000, guid: e305453a48fa58446882f6671dfa0d58, type: 2}
   - {fileID: 2100000, guid: 6b6dfd77776c54a4781ec8cab4d87860, type: 2}
   - {fileID: 2100000, guid: 62dcf96e239eb0d4db44cbe622abf152, type: 2}
   - {fileID: 2100000, guid: d37e8378fe566f84a8b75b0083ec4838, type: 2}
-  - {fileID: 2100000, guid: 51d587eafcd13384bafd060c5bc7cb82, type: 2}
-  - {fileID: 2100000, guid: e305453a48fa58446882f6671dfa0d58, type: 2}
+  - {fileID: 2100000, guid: bf1464b84bb76b44abb088d5a41acfee, type: 2}
   - {fileID: 2100000, guid: 0f4853191d321d748b1f95a97d7b37f4, type: 2}
   - {fileID: 2100000, guid: 2ce01831e9f3ae441bb48623e5fbe0c0, type: 2}
   - {fileID: 2100000, guid: 6df5b81390f2c8d4d967baea2b0a190e, type: 2}
   - {fileID: 2100000, guid: 00fc27719fc29924b9a34aab914dc83a, type: 2}
   - {fileID: 2100000, guid: 1cf3cfed14637cd42a0ad3f801ebdb71, type: 2}
-  - {fileID: 2100000, guid: bf1464b84bb76b44abb088d5a41acfee, type: 2}
   - {fileID: 2100000, guid: c815f7613a04b724089c206857e57c6a, type: 2}
   - {fileID: 2100000, guid: d3d0a48fe83c06141998d70069a3242e, type: 2}
   LightMapsNear: []
@@ -12609,7 +12609,7 @@ MonoBehaviour:
   SynchronizePosition: 0
   AllowCollisionOwnershipTransfer: 0
   Reliable: 0
-  _syncMethod: 3
+  _syncMethod: 2
   serializedProgramAsset: {fileID: 11400000, guid: d5d2b3b527b395a4b8a1da8c12aaf421,
     type: 2}
   programSource: {fileID: 11400000, guid: 3d7c2e901ced6844d9c8391e0d92a467, type: 2}

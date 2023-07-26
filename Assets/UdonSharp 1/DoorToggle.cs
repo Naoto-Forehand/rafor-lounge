@@ -9,10 +9,35 @@ public class DoorToggle : UdonSharpBehaviour
     public GameObject DoorObject;
     public bool IsLockable;
 
-    [UdonSynced]
+    [UdonSynced, FieldChangeCallback(nameof(IsOpen))]
     private bool _isOpen;
-
+    [UdonSynced, FieldChangeCallback(nameof(IsLocked))]
     private bool _isLocked;
+
+    public bool IsOpen
+    {
+        get { return _isOpen; }
+        set 
+        { 
+            _isOpen = value;
+            UpdateDoor();
+        }
+    }
+
+    public bool IsLocked
+    {
+        get { return _isLocked; }
+        set 
+        {
+            if (value)
+            {
+                IsOpen = false;
+            }
+            _isLocked = value;
+            UpdateDoor();
+        }
+    }
+
     private Animator _doorAnimator;
     private const string DOOR_TOGGLE = "is_open";
 
@@ -22,12 +47,19 @@ public class DoorToggle : UdonSharpBehaviour
         {
             _doorAnimator = DoorObject.GetComponent<Animator>();
         }
-        UpdateDoor();
+
+        if (Networking.LocalPlayer.IsOwner(gameObject))
+        {
+            IsOpen = false;
+            IsLocked = false;
+            RequestSerialization();
+        }
+        //UpdateDoor();
     }
 
     public override void OnDeserialization()
     {
-        if (!_isLocked)
+        if (!IsLocked)
         {
             UpdateDoor();
         }
@@ -35,17 +67,19 @@ public class DoorToggle : UdonSharpBehaviour
 
     public override void Interact()
     {
-        Debug.Log($"[DOOR] This door is {this.IsLockable} and it is locked ? {_isLocked}");
-        if (!this._isLocked)
+        Debug.Log($"[DOOR] {Networking.LocalPlayer.playerId} This door is {this.IsLockable} and it is locked ? {_isLocked}");
+        if (!IsLocked)
         {
-            if (_isOpen)
-            {
-                SendCustomNetworkEvent(VRC.Udon.Common.Interfaces.NetworkEventTarget.All, "CloseDoor");
-            }
-            else
-            {
-                SendCustomNetworkEvent(VRC.Udon.Common.Interfaces.NetworkEventTarget.All, "OpenDoor");
-            }
+            IsOpen = (IsOpen) ? false : true;
+            RequestSerialization();
+            //if (_isOpen)
+            //{
+            //    SendCustomNetworkEvent(VRC.Udon.Common.Interfaces.NetworkEventTarget.All, "CloseDoor");
+            //}
+            //else
+            //{
+            //    SendCustomNetworkEvent(VRC.Udon.Common.Interfaces.NetworkEventTarget.All, "OpenDoor");
+            //}
         }
     }
 
@@ -61,35 +95,48 @@ public class DoorToggle : UdonSharpBehaviour
         UpdateDoor();
     }
 
-    public  void LockDoor()
+    public void LockDoor()
     {
+        if (IsLockable)
+        {
+            IsLocked = true;
+            RequestSerialization();
+        }
+
         //_isLocked = true;
-        CloseDoor();
-        SendCustomNetworkEvent(VRC.Udon.Common.Interfaces.NetworkEventTarget.All, "ToggleLock");
+        //CloseDoor();
+        //SendCustomNetworkEvent(VRC.Udon.Common.Interfaces.NetworkEventTarget.All, "ToggleLock");
     }
 
     public void UnlockDoor()
     {
+        if (IsLockable)
+        {
+            IsLocked = false;
+            RequestSerialization();
+        }
+
         //this._isLocked = false;
-        SendCustomNetworkEvent(VRC.Udon.Common.Interfaces.NetworkEventTarget.All, "ToggleLock");
-        OpenDoor();
+        //SendCustomNetworkEvent(VRC.Udon.Common.Interfaces.NetworkEventTarget.All, "ToggleLock");
+        //OpenDoor();
     }
 
     public void ToggleLock()
     {
         if (IsLockable)
         {
-            this._isLocked = (this._isLocked) ? false : true;
-            Debug.Log($"[DOOR] {this.gameObject.name} Toggled isLocked to {_isLocked}");
+            IsLocked = (IsLocked) ? false : true;
+            Debug.Log($"[DOOR] {Networking.LocalPlayer.playerId} {this.gameObject.name} Toggled isLocked to {IsLocked}");
+            RequestSerialization();
         }
     }
 
     private void UpdateDoor()
     {
-        if ((!this._isLocked) || (this._isLocked && !_isOpen))
+        if ((!IsLocked) || (IsLocked && !IsOpen))
         {
-            Debug.Log($"[DOOR] isLocked ? {_isLocked} isOpen ? {_isOpen}");
-            _doorAnimator.SetBool(DOOR_TOGGLE, _isOpen);
+            Debug.Log($"[DOOR] {Networking.LocalPlayer.playerId} isLocked ? {IsLocked} isOpen ? {IsOpen}");
+            _doorAnimator.SetBool(DOOR_TOGGLE, IsOpen);
         }
     }
 }

@@ -96,6 +96,11 @@ public class UISystem : UdonSharpBehaviour
             GameObject.Destroy(_loadedDino);
         }
 
+        //if (_dropDown.value != _selectedDino)
+        //{
+        //    _dropDown.value = _selectedDino;
+        //}
+
         if (SpawnPoint)
         {
             _loadedDino = GameObject.Instantiate(Dinos[_selectedDino], SpawnPoint.transform, false);
