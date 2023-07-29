@@ -43,7 +43,6 @@ public class DoorUI : UdonSharpBehaviour
         _buttons = new Button[Buttons.Length];
         CacheLights();
         CacheButtons();
-        //LockableDoor.IsLockable = true;
         if (Networking.LocalPlayer.IsOwner(gameObject))
         {
             IsLocked = false;
@@ -75,7 +74,6 @@ public class DoorUI : UdonSharpBehaviour
 
     public void EnableLock()
     {
-        Debug.Log("[BEDROOM] LOCKDOWN");
         if (!Networking.IsOwner(gameObject))
         {
             var local = Networking.LocalPlayer;
@@ -83,17 +81,13 @@ public class DoorUI : UdonSharpBehaviour
             Networking.SetOwner(local, LockableDoor.gameObject);
         }
 
-        //LockableDoor.IsLocked = true;
         LockableDoor.SendCustomNetworkEvent(VRC.Udon.Common.Interfaces.NetworkEventTarget.All, "LockDoor");
         IsLocked = true;
         RequestSerialization();
-        //LockableDoor.SendCustomNetworkEvent(VRC.Udon.Common.Interfaces.NetworkEventTarget.All, "LockDoor");
-        //SendCustomNetworkEvent(VRC.Udon.Common.Interfaces.NetworkEventTarget.All, "UpdateLockState");
     }
 
     public void DisableLock()
     {
-        Debug.Log("[BEDROOM] OPEN SESAME");
         if (!Networking.IsOwner(gameObject))
         {
             var local = Networking.LocalPlayer;
@@ -101,36 +95,9 @@ public class DoorUI : UdonSharpBehaviour
             Networking.SetOwner(local, LockableDoor.gameObject);
         }
 
-        //LockableDoor.IsLocked = false;
         LockableDoor.SendCustomNetworkEvent(VRC.Udon.Common.Interfaces.NetworkEventTarget.All, "UnlockDoor");
         IsLocked = false;
         RequestSerialization();
-
-        //LockableDoor.SendCustomNetworkEvent(VRC.Udon.Common.Interfaces.NetworkEventTarget.All, "UnlockDoor");
-        //SendCustomNetworkEvent(VRC.Udon.Common.Interfaces.NetworkEventTarget.All, "UpdateLockState");
-    }
-
-    public void UpdateLockState()
-    {
-        int state = (_isLocked) ? ENABLED : DISABLED;
-        string eventName = (_isLocked) ? "LockDoor" : "UnlockDoor";
-        UpdateLights(state);
-        //for (int index = 0; index < _lights.Length; ++index)
-        //{
-        //    _lights[index].color = Colors[state];
-        //}
-        //for (int index = 0; index < _renderers.Length; ++index)
-        //{
-        //    Material[] newMaterials = new Material[_renderers[index].materials.Length];
-        //    newMaterials[0] = _renderers[index].materials[0];
-        //    newMaterials[SWAP_MAT_INDEX] = Materials[state];
-        //    _renderers[index].materials = newMaterials;
-        //}
-        Debug.Log($"[BEDROOM] {Networking.LocalPlayer.playerId} Lock State ? {_isLocked}");
-        //_buttons[ENABLED].interactable = !_isLocked;
-        //_buttons[DISABLED].interactable = _isLocked;
-        UpdateButtons();
-        //LockableDoor.SendCustomNetworkEvent(VRC.Udon.Common.Interfaces.NetworkEventTarget.All, eventName);
     }
 
     private void UpdateLights(int state)
@@ -156,8 +123,11 @@ public class DoorUI : UdonSharpBehaviour
 
     public override void OnDeserialization()
     {
-        int state = (_isLocked) ? ENABLED : DISABLED;
-        UpdateLights(state);
-        UpdateButtons();
+        if (!Networking.LocalPlayer.IsOwner(gameObject))
+        {
+            int state = (_isLocked) ? ENABLED : DISABLED;
+            UpdateLights(state);
+            UpdateButtons();
+        }
     }
 }

@@ -43,8 +43,6 @@ public class PedestalGenerator : UdonSharpBehaviour
     void Start()
     {
         StartUpFlow();
-        //_pedestalEnabled = false;
-        //_activePlayerInTrigger = UNASSIGNED_ID;
         _localId = (Networking.LocalPlayer != null) ? Networking.LocalPlayer.playerId : UNASSIGNED_ID;
 
         if (Networking.LocalPlayer.IsOwner(gameObject))
@@ -103,24 +101,6 @@ public class PedestalGenerator : UdonSharpBehaviour
         Canvas.SetActive(value);
     }
 
-    public void EnablePedestal()
-    {
-        if (!_pedestalEnabled && _activePlayerInTrigger != UNASSIGNED_ID)
-        {
-            TogglePedestal(true);
-            ToggleCanvas(true);
-        }
-    }
-
-    public void DisablePedestal()
-    {
-        if (_pedestalEnabled && _activePlayerInTrigger == UNASSIGNED_ID)
-        {
-            TogglePedestal(false);
-            ToggleCanvas(false);
-        }
-    }
-
     public override void OnPlayerTriggerEnter(VRCPlayerApi player)
     {
         if (player.IsValid() && ActivePlayerInTrigger == UNASSIGNED_ID && !PedestalEnabled)
@@ -130,9 +110,7 @@ public class PedestalGenerator : UdonSharpBehaviour
             ActivePlayerInTrigger = player.playerId;
 
             RequestSerialization();
-            //_activePlayerInTrigger = player.playerId;
         }
-        //SendCustomNetworkEvent(VRC.Udon.Common.Interfaces.NetworkEventTarget.All, "EnablePedestal");
     }
 
     public override void OnPlayerTriggerStay(VRCPlayerApi player)
@@ -144,11 +122,6 @@ public class PedestalGenerator : UdonSharpBehaviour
             ActivePlayerInTrigger = player.playerId;
 
             RequestSerialization();
-            //_activePlayerInTrigger = player.playerId;
-            //if (!_pedestalEnabled)
-            //{
-            //    SendCustomNetworkEvent(VRC.Udon.Common.Interfaces.NetworkEventTarget.All, "EnablePedestal");
-            //}
         }
         else if (player.IsValid() && ActivePlayerInTrigger == UNASSIGNED_ID)
         {
@@ -168,18 +141,12 @@ public class PedestalGenerator : UdonSharpBehaviour
 
             RequestSerialization();
         }
-        //SendCustomNetworkEvent(VRC.Udon.Common.Interfaces.NetworkEventTarget.All, "DisablePedestal");
     }
 
     //TODO Figure out better way to enable/disable
     public override void OnDeserialization()
     {
         Debug.Log($"[{Networking.LocalPlayer.playerId}] received deserialization on pedestal generator");
-        //if (_pedestalEnabled)
-        //{
-        //    _spawnedPedestal.SetActive(_pedestalEnabled);
-        //    TogglePedestalLamps(_pedestalEnabled);
-        //}
     }
 
     public override void OnPlayerLeft(VRCPlayerApi player)
@@ -192,7 +159,6 @@ public class PedestalGenerator : UdonSharpBehaviour
                 PedestalEnabled = false;
             }
             RequestSerialization();
-            //SendCustomNetworkEvent(VRC.Udon.Common.Interfaces.NetworkEventTarget.All, "DisablePedestal");
         }
     }
 }

@@ -61,8 +61,6 @@ public class MirrorUI : UdonSharpBehaviour
             _mirrorIsOn = false;
             UpdateMirror();
         }
-        
-        //UpdateMirror();
     }
 
     public override void OnDeserialization()
@@ -74,15 +72,13 @@ public class MirrorUI : UdonSharpBehaviour
 
     public void ToggleMirror()
     {
-        Debug.Log($"[MIRROR] {Networking.LocalPlayer.playerId} TOGGLEMIRROR INVOKED");
         if (!Networking.LocalPlayer.IsOwner(gameObject))
         {
             Networking.SetOwner(Networking.LocalPlayer,gameObject);
         }
-        //_mirrorIsOn = (_mirrorIsOn) ? false : true;
+        
         MirrorIsOn = (MirrorIsOn) ? false : true;
         RequestSerialization();
-        //SendCustomNetworkEvent(VRC.Udon.Common.Interfaces.NetworkEventTarget.All, "UpdateMirror");
     }
 
     public void UpdateMirror()

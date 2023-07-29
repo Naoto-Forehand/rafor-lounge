@@ -46,18 +46,8 @@ public class MirrorTrigger : UdonSharpBehaviour
             Debug.Log($"[{Networking.LocalPlayer.playerId}] MIRROR CANVAS ? {_isEnabled}");
             MirrorCanvas.SetActive(_isEnabled);
         }
-        //else if (Networking.GetOwner(gameObject) != Networking.LocalPlayer)
-        //{
-        //    MirrorCanvas.SetActive(IsEnabled);
-        //}
-        //UpdateMirrorCanvas();
         Debug.Log($"[{Networking.LocalPlayer.playerId}] MirrorCanvas on ? {(MirrorCanvas.activeInHierarchy)}");
     }
-
-    //public void UpdateMirrorCanvas()
-    //{
-    //    MirrorCanvas.SetActive(_isEnabled);
-    //}
 
     public override void OnPlayerTriggerEnter(VRCPlayerApi player)
     {
@@ -68,8 +58,6 @@ public class MirrorTrigger : UdonSharpBehaviour
             OwnerID = player.playerId;
 
             RequestSerialization();
-            //UpdateMirrorCanvas();
-            //SendCustomNetworkEvent(VRC.Udon.Common.Interfaces.NetworkEventTarget.All, "UpdateMirrorCanvas");
         }
     }
 
@@ -101,8 +89,6 @@ public class MirrorTrigger : UdonSharpBehaviour
             OwnerID = UNASSIGNED_ID;
 
             RequestSerialization();
-            //_isEnabled = false;
-            //SendCustomNetworkEvent(VRC.Udon.Common.Interfaces.NetworkEventTarget.All, "UpdateMirrorCanvas");
         }
     }
 
@@ -122,6 +108,6 @@ public class MirrorTrigger : UdonSharpBehaviour
 
     public override void OnDeserialization()
     {
-        Debug.Log($"DESERIALIZED {Networking.LocalPlayer.playerId} isEnabled ? {_isEnabled}");
+        Debug.Log($"DESERIALIZED {Networking.LocalPlayer.playerId} isEnabled ? {_isEnabled}"); 
     }
 }

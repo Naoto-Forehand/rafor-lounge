@@ -22,6 +22,10 @@ public class LightGuider : UdonSharpBehaviour
         set 
         {
             _lightIntensity = value;
+            if (Networking.IsOwner(gameObject))
+            {
+                Debug.Log($"[GUIDED LIGHTS] intensity {_lightIntensity}");
+            }
             SetLightIntensity();
         }
     }
@@ -40,16 +44,6 @@ public class LightGuider : UdonSharpBehaviour
     void Start()
     {
         StartUpFlow();
-        //_guideLights = new Light[GuideLights.Length];
-        //for (int index = 0; index < GuideLights.Length; ++index)
-        //{
-        //    var guideLight = GuideLights[index] ? GuideLights[index].GetComponent<Light>() : null;
-        //    if (guideLight)
-        //    {
-        //        _lightIntensity = (_lightIntensity == 0f) ? MinIntensity : _lightIntensity;
-        //        _guideLights[index] = guideLight;
-        //    }
-        //}
         if (Networking.LocalPlayer.IsOwner(gameObject))
         {
             LightIntensity = (LightIntensity == 0f) ? MinIntensity : LightIntensity;
