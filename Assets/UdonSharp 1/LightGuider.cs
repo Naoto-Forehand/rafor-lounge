@@ -14,35 +14,59 @@ public class LightGuider : UdonSharpBehaviour
     [UdonSynced]
     private float _lightIntensity = 0f;
     [UdonSynced]
-    private int _ownerID = -10;
+    private int _ownerID;
+
+    public float LightIntensity
+    {
+        get { return _lightIntensity; }
+        set 
+        {
+            _lightIntensity = value;
+            SetLightIntensity();
+        }
+    }
+
+    public int OwnerID
+    {
+        get { return _ownerID; }
+        set { _ownerID = value; }
+    }
+
     private Light[] _guideLights;
-    private const int NO_OWNER = -1;
+    private const int UNASSIGNED_ID = -1;
     private const float MAX_DISTANCE = 20.5f;
     private const float MIN_DISTANCE = 7f;
 
     void Start()
     {
-        _guideLights = new Light[GuideLights.Length];
-        for (int index = 0; index < GuideLights.Length; ++index)
+        StartUpFlow();
+        //_guideLights = new Light[GuideLights.Length];
+        //for (int index = 0; index < GuideLights.Length; ++index)
+        //{
+        //    var guideLight = GuideLights[index] ? GuideLights[index].GetComponent<Light>() : null;
+        //    if (guideLight)
+        //    {
+        //        _lightIntensity = (_lightIntensity == 0f) ? MinIntensity : _lightIntensity;
+        //        _guideLights[index] = guideLight;
+        //    }
+        //}
+        if (Networking.LocalPlayer.IsOwner(gameObject))
         {
-            var guideLight = GuideLights[index] ? GuideLights[index].GetComponent<Light>() : null;
-            if (guideLight)
-            {
-                _lightIntensity = (_lightIntensity == 0f) ? MinIntensity : _lightIntensity;
-                _guideLights[index] = guideLight;
-            }
+            LightIntensity = (LightIntensity == 0f) ? MinIntensity : LightIntensity;
+            OwnerID = UNASSIGNED_ID;
+            SetLightIntensity();
+            RequestSerialization();
         }
-        SetLightIntensity();
-
-        if (_ownerID == -10)
+        else
         {
-            _ownerID = NO_OWNER;
+            _lightIntensity = (_lightIntensity == 0f) ? MinIntensity : _lightIntensity;
+            SetLightIntensity();
         }
     }
 
     public override void OnDeserialization()
     {
-        if (_ownerID != NO_OWNER)
+        if (_ownerID != UNASSIGNED_ID)
         {
             SetLightIntensity();
         }
@@ -50,31 +74,33 @@ public class LightGuider : UdonSharpBehaviour
 
     public override void OnPlayerTriggerEnter(VRCPlayerApi player)
     {
-        if (_ownerID == NO_OWNER)
+        if (OwnerID == UNASSIGNED_ID)
         {
-            _ownerID = player.playerId;
-            Networking.SetOwner(player, this.gameObject);
+            OwnerID = player.playerId;
+            Networking.SetOwner(player, gameObject);
+            RequestSerialization();
         }
     }
 
     public override void OnPlayerTriggerStay(VRCPlayerApi player)
     {
-        if (!Networking.IsOwner(player, this.gameObject) && _ownerID == NO_OWNER)
+        if (!Networking.IsOwner(player, gameObject) && OwnerID == UNASSIGNED_ID)
         {
-            _ownerID = player.playerId;
-            Networking.SetOwner(player, this.gameObject);
+            OwnerID = player.playerId;
+            Networking.SetOwner(player, gameObject);
         }
 
-        if (_ownerID == player.playerId)
+        if (OwnerID == player.playerId)
         {
-            SendCustomNetworkEvent(VRC.Udon.Common.Interfaces.NetworkEventTarget.All, "UpdateLightIntensity");
+            UpdateLightIntensity();
+            RequestSerialization();
         }
     }
     public override void OnPlayerTriggerExit(VRCPlayerApi player)
     {
-        if (_ownerID == player.playerId)
+        if (OwnerID == player.playerId)
         {
-            _ownerID = NO_OWNER;
+            OwnerID = UNASSIGNED_ID;
         }
     }
 
@@ -83,11 +109,11 @@ public class LightGuider : UdonSharpBehaviour
         var currentDistance = CalculateDistance();
         var varRange = (MaxIntensity - MinIntensity);
         var currentPoint = varRange * currentDistance;
-        _lightIntensity = currentPoint + MinIntensity;
-        _lightIntensity = Mathf.Max(_lightIntensity, MinIntensity);
-        _lightIntensity = Mathf.Min(_lightIntensity, MaxIntensity);
-        
-        SetLightIntensity();
+        var newIntensity  = currentPoint + MinIntensity;
+        newIntensity = Mathf.Max(newIntensity, MinIntensity);
+        newIntensity = Mathf.Min(newIntensity, MaxIntensity);
+
+        LightIntensity = newIntensity;
     }
 
     private void SetLightIntensity()
@@ -96,14 +122,14 @@ public class LightGuider : UdonSharpBehaviour
         {
             if (_guideLights[index])
             {
-                _guideLights[index].intensity = _lightIntensity;
+                _guideLights[index].intensity = LightIntensity;
             }   
         }
     }
 
     private float CalculateDistance()
     {
-        var owner = Networking.GetOwner(this.gameObject);
+        var owner = Networking.GetOwner(gameObject);
         float distance = Vector3.Distance(owner.GetPosition(), ReferenceObject.transform.position);
         distance = Mathf.Min(distance, MAX_DISTANCE);
         distance = Mathf.Max(distance, MIN_DISTANCE);
@@ -111,5 +137,18 @@ public class LightGuider : UdonSharpBehaviour
         float relativeDistance = Mathf.InverseLerp(MIN_DISTANCE, MAX_DISTANCE, distance);
 
         return 1f - relativeDistance;
+    }
+
+    private void StartUpFlow()
+    {
+        _guideLights = new Light[GuideLights.Length];
+        for (int index = 0; index < GuideLights.Length; ++index)
+        {
+            var guideLight = GuideLights[index] ? GuideLights[index].GetComponent<Light>() : null;
+            if (guideLight)
+            {
+                _guideLights[index] = guideLight;
+            }
+        }
     }
 }

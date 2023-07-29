@@ -61,7 +61,7 @@ public class MirrorTrigger : UdonSharpBehaviour
 
     public override void OnPlayerTriggerEnter(VRCPlayerApi player)
     {
-        if (player.IsValid() && !_isEnabled && OwnerID == UNASSIGNED_ID)
+        if (player.IsValid() && !IsEnabled && OwnerID == UNASSIGNED_ID)
         {
             Networking.SetOwner(player, gameObject);
             IsEnabled = true;

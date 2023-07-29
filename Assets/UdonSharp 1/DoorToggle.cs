@@ -59,6 +59,7 @@ public class DoorToggle : UdonSharpBehaviour
 
     public override void OnDeserialization()
     {
+        Debug.Log($"[DOOR] {Networking.LocalPlayer.playerId} This door is {IsLockable} and it is locked ? {IsLocked}");
         if (!IsLocked)
         {
             UpdateDoor();
@@ -67,7 +68,12 @@ public class DoorToggle : UdonSharpBehaviour
 
     public override void Interact()
     {
-        Debug.Log($"[DOOR] {Networking.LocalPlayer.playerId} This door is {this.IsLockable} and it is locked ? {_isLocked}");
+        Debug.Log($"[DOOR] {Networking.LocalPlayer.playerId} This door is {IsLockable} and it is locked ? {IsLocked}");
+        if (!Networking.LocalPlayer.IsOwner(gameObject))
+        {
+            Networking.SetOwner(Networking.LocalPlayer, gameObject);
+        }
+
         if (!IsLocked)
         {
             IsOpen = (IsOpen) ? false : true;
@@ -135,8 +141,11 @@ public class DoorToggle : UdonSharpBehaviour
     {
         if ((!IsLocked) || (IsLocked && !IsOpen))
         {
-            Debug.Log($"[DOOR] {Networking.LocalPlayer.playerId} isLocked ? {IsLocked} isOpen ? {IsOpen}");
-            _doorAnimator.SetBool(DOOR_TOGGLE, IsOpen);
+            Debug.Log($"[DOOR] {Networking.LocalPlayer.playerId} isLocked ? {IsLocked} isOpen ? {IsOpen} ANIMATOR BOOL SET");
+            if (_doorAnimator.GetBool(DOOR_TOGGLE) != IsOpen)
+            {
+                _doorAnimator.SetBool(DOOR_TOGGLE, IsOpen);
+            }
         }
     }
 }

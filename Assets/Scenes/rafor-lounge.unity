@@ -3168,7 +3168,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &469373721
 Transform:
   m_ObjectHideFlags: 0
@@ -12609,7 +12609,7 @@ MonoBehaviour:
   SynchronizePosition: 0
   AllowCollisionOwnershipTransfer: 0
   Reliable: 0
-  _syncMethod: 2
+  _syncMethod: 3
   serializedProgramAsset: {fileID: 11400000, guid: d5d2b3b527b395a4b8a1da8c12aaf421,
     type: 2}
   programSource: {fileID: 11400000, guid: 3d7c2e901ced6844d9c8391e0d92a467, type: 2}

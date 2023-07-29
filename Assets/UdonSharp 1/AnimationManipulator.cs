@@ -31,6 +31,11 @@ public class AnimationManipulator : UdonSharpBehaviour
         _cubeTransform = gameObject.transform;
     }
 
+    public void SnapTo(Transform newPosition)
+    {
+        transform.position = newPosition.position;
+    }
+
     public void UpdateAnimation()
     {
         if (DinoToAnimate != null)

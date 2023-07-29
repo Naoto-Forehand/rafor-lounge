@@ -12,16 +12,50 @@ public class PedestalGenerator : UdonSharpBehaviour
     public GameObject PedestalSpotLight;
     public GameObject Canvas;
 
-    [UdonSynced]
+    [UdonSynced, FieldChangeCallback(nameof(PedestalEnabled))]
     private bool _pedestalEnabled;
-    [UdonSynced]
+    [UdonSynced, FieldChangeCallback(nameof(ActivePlayerInTrigger))]
     private int _activePlayerInTrigger;
+
+    public bool PedestalEnabled
+    {
+        get { return _pedestalEnabled; }
+        set 
+        { 
+            _pedestalEnabled = value;
+            TogglePedestal(_pedestalEnabled);
+            TogglePedestalLamps(_pedestalEnabled);
+            ToggleCanvas(_pedestalEnabled);
+        }
+    }
+
+    public int ActivePlayerInTrigger
+    {
+        get { return _activePlayerInTrigger; }
+        set { _activePlayerInTrigger = value; }
+    }
+
 
     private GameObject _spawnedPedestal;
     private int _localId;
     private const int UNASSIGNED_ID = -1;
 
     void Start()
+    {
+        StartUpFlow();
+        //_pedestalEnabled = false;
+        //_activePlayerInTrigger = UNASSIGNED_ID;
+        _localId = (Networking.LocalPlayer != null) ? Networking.LocalPlayer.playerId : UNASSIGNED_ID;
+
+        if (Networking.LocalPlayer.IsOwner(gameObject))
+        {
+            PedestalEnabled = false;
+            ActivePlayerInTrigger = UNASSIGNED_ID;
+            RequestSerialization();
+        }
+    }
+
+    private void StartUpFlow()
     {
         if (PedestalUnderLight && PedestalSpotLight)
         {
@@ -36,9 +70,6 @@ public class PedestalGenerator : UdonSharpBehaviour
         CreatePedestal();
         InjectSpawnPoint();
         _spawnedPedestal.SetActive(false);
-        _pedestalEnabled = false;
-        _activePlayerInTrigger = UNASSIGNED_ID;
-        _localId = (Networking.LocalPlayer != null) ? Networking.LocalPlayer.playerId : UNASSIGNED_ID;
     }
 
     private void CreatePedestal()
@@ -92,50 +123,76 @@ public class PedestalGenerator : UdonSharpBehaviour
 
     public override void OnPlayerTriggerEnter(VRCPlayerApi player)
     {
-        if (player.playerId == _localId && _activePlayerInTrigger == UNASSIGNED_ID)
+        if (player.IsValid() && ActivePlayerInTrigger == UNASSIGNED_ID && !PedestalEnabled)
         {
-            _activePlayerInTrigger = player.playerId;
+            Networking.SetOwner(player, gameObject);
+            PedestalEnabled = true;
+            ActivePlayerInTrigger = player.playerId;
+
+            RequestSerialization();
+            //_activePlayerInTrigger = player.playerId;
         }
-        SendCustomNetworkEvent(VRC.Udon.Common.Interfaces.NetworkEventTarget.All, "EnablePedestal");
+        //SendCustomNetworkEvent(VRC.Udon.Common.Interfaces.NetworkEventTarget.All, "EnablePedestal");
     }
 
     public override void OnPlayerTriggerStay(VRCPlayerApi player)
     {
-        if ((_activePlayerInTrigger == UNASSIGNED_ID) && (player.IsValid()))
+        if ((ActivePlayerInTrigger == UNASSIGNED_ID) && (player.IsValid()) && (!PedestalEnabled))
         {
-            _activePlayerInTrigger = player.playerId;
-            if (!_pedestalEnabled)
-            {
-                SendCustomNetworkEvent(VRC.Udon.Common.Interfaces.NetworkEventTarget.All, "EnablePedestal");
-            }
+            Networking.SetOwner(player, gameObject);
+            PedestalEnabled = true;
+            ActivePlayerInTrigger = player.playerId;
+
+            RequestSerialization();
+            //_activePlayerInTrigger = player.playerId;
+            //if (!_pedestalEnabled)
+            //{
+            //    SendCustomNetworkEvent(VRC.Udon.Common.Interfaces.NetworkEventTarget.All, "EnablePedestal");
+            //}
+        }
+        else if (player.IsValid() && ActivePlayerInTrigger == UNASSIGNED_ID)
+        {
+            Networking.SetOwner(player, gameObject);
+            ActivePlayerInTrigger = player.playerId;
+
+            RequestSerialization();
         }
     }
 
     public override void OnPlayerTriggerExit(VRCPlayerApi player)
     {
-        if (player.playerId == _localId && _activePlayerInTrigger == player.playerId)
+        if (player.IsValid() && PedestalEnabled && ActivePlayerInTrigger == player.playerId)
         {
-            _activePlayerInTrigger = UNASSIGNED_ID;
+            PedestalEnabled = false;
+            ActivePlayerInTrigger = UNASSIGNED_ID;
+
+            RequestSerialization();
         }
-        SendCustomNetworkEvent(VRC.Udon.Common.Interfaces.NetworkEventTarget.All, "DisablePedestal");
+        //SendCustomNetworkEvent(VRC.Udon.Common.Interfaces.NetworkEventTarget.All, "DisablePedestal");
     }
 
     //TODO Figure out better way to enable/disable
     public override void OnDeserialization()
     {
-        if (_pedestalEnabled)
-        {
-            _spawnedPedestal.SetActive(_pedestalEnabled);
-            TogglePedestalLamps(_pedestalEnabled);
-        }
+        Debug.Log($"[{Networking.LocalPlayer.playerId}] received deserialization on pedestal generator");
+        //if (_pedestalEnabled)
+        //{
+        //    _spawnedPedestal.SetActive(_pedestalEnabled);
+        //    TogglePedestalLamps(_pedestalEnabled);
+        //}
     }
 
     public override void OnPlayerLeft(VRCPlayerApi player)
     {
-        if (_localId == _activePlayerInTrigger)
+        if (_localId == ActivePlayerInTrigger)
         {
-            _activePlayerInTrigger = UNASSIGNED_ID;
-            SendCustomNetworkEvent(VRC.Udon.Common.Interfaces.NetworkEventTarget.All, "DisablePedestal");
+            ActivePlayerInTrigger = UNASSIGNED_ID;
+            if (PedestalEnabled)
+            {
+                PedestalEnabled = false;
+            }
+            RequestSerialization();
+            //SendCustomNetworkEvent(VRC.Udon.Common.Interfaces.NetworkEventTarget.All, "DisablePedestal");
         }
     }
 }

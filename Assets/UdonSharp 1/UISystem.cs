@@ -15,10 +15,36 @@ public class UISystem : UdonSharpBehaviour
     public Transform DieRespawn;
     public GameObject ActiveSideObject;
 
-    [UdonSynced]
+    [UdonSynced, FieldChangeCallback(nameof(SelectedDino))]
     private int _selectedDino;
-    [UdonSynced]
+    [UdonSynced, FieldChangeCallback(nameof(DinoVisible))]
     private bool _dinoVisible;
+
+    public int SelectedDino
+    {
+        get { return _selectedDino; }
+        set 
+        { 
+            _selectedDino = value;
+            if (DinoVisible)
+            {
+                LoadDino();
+            }
+            //UpdateUICanvas();
+        }
+    }
+
+    public bool DinoVisible
+    {
+        get { return _dinoVisible; }
+        set 
+        { 
+            _dinoVisible = value;
+            ToggleDino();
+            //UpdateUICanvas();
+        }
+    }
+
 
     private GameObject _loadedDino;
     private Dropdown _dropDown;
@@ -27,9 +53,26 @@ public class UISystem : UdonSharpBehaviour
 
     void Start()
     {
-        _selectedDino = 0;
-        _dinoVisible = false;
+        StartUpFlow();
 
+        if (Networking.LocalPlayer.IsOwner(gameObject))
+        {
+            DinoVisible = false;
+            SelectedDino = 0;
+
+            RequestSerialization();
+        }
+        else
+        {
+            _selectedDino = 0;
+            _dinoVisible = false;
+        }
+
+        Debug.Log($"[{Networking.LocalPlayer.playerId}] ui {SelectedDino} enabled {DinoVisible}");
+    }
+
+    private void StartUpFlow()
+    {
         if (Dropdown)
         {
             _dropDown = Dropdown.GetComponent<Dropdown>();
@@ -46,6 +89,28 @@ public class UISystem : UdonSharpBehaviour
         }
     }
 
+    private void ToggleDino()
+    {
+        if (DinoVisible)
+        {
+            LoadDino();
+        }
+        else
+        {
+            RemoveDino();
+        }
+    }
+
+    private void UpdateUICanvas()
+    {
+        _dropDown.value = SelectedDino;
+        _toggle.isOn = DinoVisible;
+        if (_activeSide.text != $"{Die.ActiveSide}")
+        {
+            _activeSide.text = $"{Die.ActiveSide}";
+        }
+    }
+
     void LateUpdate()
     {
         if ((_activeSide != null) && (Die))
@@ -58,13 +123,20 @@ public class UISystem : UdonSharpBehaviour
     {
         if (value < Dinos.Length && value >= 0)
         {
-            _selectedDino = value;
+            Networking.SetOwner(Networking.LocalPlayer, gameObject);
+            SelectedDino = value;
+            RequestSerialization();
         }
 
-        if (_dinoVisible)
-        {
-            SendCustomNetworkEvent(VRC.Udon.Common.Interfaces.NetworkEventTarget.All, "LoadDino");
-        }
+        //if (_dinoVisible)
+        //{
+        //    SendCustomNetworkEvent(VRC.Udon.Common.Interfaces.NetworkEventTarget.All, "LoadDino");
+        //}
+    }
+
+    public override void OnDeserialization()
+    {
+        UpdateUICanvas();
     }
 
     public void UpdateToggle()
@@ -79,14 +151,17 @@ public class UISystem : UdonSharpBehaviour
 
     public void OnToggleChange(bool value)
     {
-        if (value)
-        {
-            SendCustomNetworkEvent(VRC.Udon.Common.Interfaces.NetworkEventTarget.All, "ShowDino");
-        }
-        else
-        {
-            SendCustomNetworkEvent(VRC.Udon.Common.Interfaces.NetworkEventTarget.All, "HideDino");
-        }
+        Networking.SetOwner(Networking.LocalPlayer, gameObject);
+        DinoVisible = value;
+        RequestSerialization();
+        //if (value)
+        //{
+        //    SendCustomNetworkEvent(VRC.Udon.Common.Interfaces.NetworkEventTarget.All, "ShowDino");
+        //}
+        //else
+        //{
+        //    SendCustomNetworkEvent(VRC.Udon.Common.Interfaces.NetworkEventTarget.All, "HideDino");
+        //}
     }
 
     public void LoadDino()
@@ -123,20 +198,24 @@ public class UISystem : UdonSharpBehaviour
         }
     }
 
-    public void ShowDino()
-    {
-        _dinoVisible = true;
-        SendCustomNetworkEvent(VRC.Udon.Common.Interfaces.NetworkEventTarget.All, "LoadDino");
-    }
+    //public void ShowDino()
+    //{
+    //    _dinoVisible = true;
+    //    SendCustomNetworkEvent(VRC.Udon.Common.Interfaces.NetworkEventTarget.All, "LoadDino");
+    //}
 
-    public void HideDino()
-    {
-        _dinoVisible = false;
-        SendCustomNetworkEvent(VRC.Udon.Common.Interfaces.NetworkEventTarget.All, "RemoveDino");
-    }
+    //public void HideDino()
+    //{
+    //    _dinoVisible = false;
+    //    SendCustomNetworkEvent(VRC.Udon.Common.Interfaces.NetworkEventTarget.All, "RemoveDino");
+    //}
 
     public void RetrieveDie()
     {
-        Die.transform.position = DieRespawn.position;
+        Debug.Log($"[{Networking.LocalPlayer.playerId}] is requesting to retrieve the Die");
+        Networking.SetOwner(Networking.LocalPlayer, Die.gameObject);
+        //Die.transform.position = DieRespawn.position;
+        Die.SnapTo(DieRespawn);
+        RequestSerialization();
     }
 }
